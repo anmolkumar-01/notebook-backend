@@ -20,11 +20,11 @@ cloudinary.config({
 
 dbConnect()
         .then(() => {
-            console.log('MongoDB Connected')
+            console.log('MongoDB Connected from server.js')
             app.listen(process.env.PORT || 8000 , () => {
                 console.log(`Server is Running at ${process.env.PORT || 8000}`)
             })
         })
         .catch((err)=>{
-            console.log("MongoDB Connection Failed",err);
+            console.log("MongoDB Connection Failed from server.js",err);
         })

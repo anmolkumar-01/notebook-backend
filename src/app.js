@@ -26,7 +26,6 @@ import userRoute from './routes/userRoute.js';
 
 // Route declerations
 app.use('/api/v1/users', userRoute);  
-app.use('/api/v1/admin', userRoute);  
 
 
 // Export the app for external use

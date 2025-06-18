@@ -27,8 +27,8 @@ const generateAccessAndRefreshTokens = async(userId) => {
     }
 }
 
-
-  export const Register = asyncHandler(async (req, res) => {
+// register user
+export const Register = asyncHandler(async (req, res) => {
     const { email, password, username, confirmPassword, role } = req.body;
 
     console.log(" data coming in user controller register from req.body:", req.body);
@@ -88,7 +88,7 @@ const generateAccessAndRefreshTokens = async(userId) => {
     }
   
     return res.status(201).json(new ApiResponse(201, createdUser, "User registered successfully"));
-  });
+});
   
 
  // login user
@@ -178,8 +178,8 @@ export const logoutUser = asyncHandler( async(req,res) =>{
     .json(new ApiResponse(200 , {}, `user logged out successfully`))
 })
   
-
-  export const refreshAccessToken = asyncHandler(async (req, res) => {
+// refresh access token
+export const refreshAccessToken = asyncHandler(async (req, res) => {
     const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
     
     if (!incomingRefreshToken) {
@@ -227,6 +227,6 @@ export const logoutUser = asyncHandler( async(req,res) =>{
     } catch (error) {
       throw new ApiError(401, error?.message || "Invalid Refresh Token");
     }
-  });
+});
   
   

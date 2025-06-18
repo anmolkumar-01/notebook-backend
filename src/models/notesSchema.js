@@ -20,13 +20,13 @@ const notesSchema = new mongoose.Schema(
             ref: "User",
             required: [true, "Owner is required"],
         },
-        users:{
+        users:[{
             type:mongoose.Schema.Types.ObjectId,
             ref: "User",
-        }
+        }]
 
     } , 
     {timestamps: true}
 );
 
-export const Notes = mongoose.model("Notes", notesSchema);
+export const Note = mongoose.model("Note", notesSchema);

@@ -22,8 +22,15 @@ const notesSchema = new mongoose.Schema(
             required: [true, "Owner is required"],
         },
         users:[{
-            type:mongoose.Schema.Types.ObjectId,
-            ref: "User",
+            user: {
+                type:mongoose.Schema.Types.ObjectId,
+                ref: "User"
+            },
+            role:{
+                type: String,
+                enum: ["admin", "subadmin", "user"],
+                default: "user",
+            }
         }]
 
     } , 

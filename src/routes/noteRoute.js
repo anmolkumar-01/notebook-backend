@@ -5,13 +5,17 @@ import { isAdminLogin, isAdminOrSubadminLogin, verifyJWT } from '../middlewares/
 import{
     createNote,
     deleteNote,
-    updateNote
+    updateNote,
+    assignUserToNote,
+    updateAssignedUserRole
 } from '../controllers/notesController.js';
 
 const router = Router();
 
 router.post('/create', verifyJWT, createNote);
-router.delete('/delete/:noteId',verifyJWT , isAdminLogin, deleteNote);
-router.post('/update/:noteId',verifyJWT,isAdminOrSubadminLogin, updateNote);
+router.delete('/delete/:noteId',verifyJWT, deleteNote);
+router.post('/update/:noteId',verifyJWT, updateNote);
+router.post('/assign-user/:noteId', verifyJWT, assignUserToNote);
+router.post('/update-user-role/:noteId', verifyJWT, updateAssignedUserRole);
 
 export default router;

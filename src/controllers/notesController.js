@@ -4,7 +4,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { Note } from "../models/notesSchema.js";
 
 
-// create a new note
+// 1. create a new note
 const createNote = asyncHandler(async (req, res) =>{
 
     const {title,description , data} = req.body;
@@ -32,14 +32,14 @@ const createNote = asyncHandler(async (req, res) =>{
         description: description ? description.trim() : "",
         data: data ? data.trim() : "",
         owner,
-        users: [owner]
+        users: [{user: owner , role: "admin"}] // by default the owner is the admin of the note
     })
 
     res.status(201).json(new ApiResponse(201, note, "Note created successfully"));
 
 })
 
-// delete a note
+// 2. delete a note by id
 const deleteNote = asyncHandler(async (req, res) =>{
 
     // take the note id
@@ -56,6 +56,15 @@ const deleteNote = asyncHandler(async (req, res) =>{
         throw new ApiError(404, "Note does not exist");
     }
 
+    // only admin can delete a note
+    const currentUser = req.user._id
+
+    const isAdmin = (current_note.users.some(users=> users.user.toString() === currentUser.toString() && users.role === "admin"));
+
+    if(!isAdmin){
+        throw new ApiError(403, "You are not authorized to delete this note , need admin role");
+    }   
+
     // delete the note
     await current_note.deleteOne()
    
@@ -63,7 +72,7 @@ const deleteNote = asyncHandler(async (req, res) =>{
     res.status(200).json(new ApiResponse(200, null, "Note deleted successfully"));
 } )
 
-// update a note
+// 3. update a note by id - only admin or subadmin can update a note
 const updateNote = asyncHandler(async (req, res) =>{
 
     // take the note id from params
@@ -95,6 +104,15 @@ const updateNote = asyncHandler(async (req, res) =>{
         throw new ApiError(400, "A note with the same title already exists");
     }
 
+    // only admin or subadmin can delete a note
+    const currentUser = req.user._id
+
+    const isAdminOrSubadminLogin = (current_note.users.some(users=> users.user.toString() === currentUser.toString() && (users.role === "admin" || users.role === "subadmin")));
+    
+    if(!isAdminOrSubadminLogin){
+        throw new ApiError(403, "You are not authorized to update this note ( need subadmin or admin role )");
+    }   
+
     // update the note with new data
 
     await current_note.updateOne({
@@ -106,10 +124,107 @@ const updateNote = asyncHandler(async (req, res) =>{
     res.status(200).json(new ApiResponse(200, null, "Note updated successfully"));
 })
 
-//
+// 4. assign user to note - only admin can assign users
+const assignUserToNote = asyncHandler(async (req, res) =>{
+
+    // get note id from params
+    const {noteId} = req.params;
+    if(!noteId){
+        throw new ApiError(400, "Note ID is required");
+    }
+
+    // get the user id and role
+    const {userId, role} = req.body;
+    if(!userId || !role){
+        throw new ApiError(400, "User ID and role are required");
+    }
+
+    // find this note from the database
+    const currentNote = await Note.findById(noteId);
+
+    // only admin can assign users to a note
+    const currentUser = req.user._id;
+
+    const isAdmin = (currentNote.users.some(users => users.user.toString() === currentUser.toString() && users.role === "admin"));
+    if(!isAdmin){
+        throw new ApiError(403, "You are not authorized to assign users to this note ( need admin role )");
+    }
+
+    // if user is already assigned to the note , then change its role
+    const existingUser = currentNote.users.find(users => users.user.toString() === userId.toString());
+    if(existingUser){
+        throw new ApiError(400, "This User is already assigned to this note");
+    }
+    
+    // add this user to the users of the note
+    await currentNote.updateOne({
+        $push:{
+            users: {
+                user:userId,
+                role: role.trim()
+            }
+        }
+    })
+
+    res.status(200).json(new ApiResponse(200, currentNote, "User assigned to note successfully"));
+    
+} )
+
+// 5. update assigned user role in note - only admin can update user role
+const updateAssignedUserRole = asyncHandler(async (req, res) =>{
+
+    // get note id from params
+    const {noteId} = req.params;
+    if(!noteId){
+        throw new ApiError(400, "Note ID is required");
+    }
+
+    // get the user id and role
+    const {userId, role} = req.body;
+    console.log("Data received in updateAssignedUserRole controller:", req.body);
+
+    if(!userId || !role){
+        throw new ApiError(400, "User ID and role are required");
+    }
+
+    // find this note from the database
+    const currentNote = await Note.findById(noteId);
+    
+    if(!currentNote){
+        throw new ApiError(404, "Note does not exist");
+    }
+
+    // only admin can update user role
+    const currentUser = req.user._id;
+    const isAdmin = (currentNote.users.some(users => users.user.toString() === currentUser.toString() && users.role === "admin"));
+    if(!isAdmin){
+        throw new ApiError(403, "You are not authorized to update user role in this note ( need admin role )");
+    }
+
+    // find this user in the note's users
+    const existingUser = currentNote.users.find(users => users.user.toString() === userId.toString());
+    if(!existingUser){
+        throw new ApiError(404, "This user is not assigned to this note");
+    }
+
+    // update the role of the user
+    await Note.updateOne(
+    // find the user in current note whose role is to be updated
+        { _id: currentNote._id, "users.user": userId },
+        {
+            $set: {
+                "users.$.role": role.trim()
+            }
+        }
+    )
+
+    return res.status(200).json(new ApiResponse(200, "User role updated successfully"));
+})
 
 export{
     createNote,
     deleteNote,
-    updateNote
+    updateNote,
+    assignUserToNote,
+    updateAssignedUserRole
 }

@@ -221,10 +221,60 @@ const updateAssignedUserRole = asyncHandler(async (req, res) =>{
     return res.status(200).json(new ApiResponse(200, "User role updated successfully"));
 })
 
+// 6. remove the user from the note - only admin can do this
+const removeUserFromNote = asyncHandler(async (req, res) =>{
+    // get note id from params
+    const {noteId} = req.params;
+    if(!noteId){
+        throw new ApiError(400, "Note ID is required");
+    }
+
+    // get the user id and role
+    const {userId} = req.body;
+    console.log("Data received in updateAssignedUserRole controller:", req.body);
+
+    if(!userId){
+        throw new ApiError(400, "User ID is required");
+    }
+
+    // find this note from the database
+    const currentNote = await Note.findById(noteId);
+    if(!currentNote){
+        throw new ApiError(404, "Note does not exist");
+    }
+
+    // only admin can update user role
+    const currentUser = req.user._id;
+    const isAdmin = (currentNote.users.some(users => users.user.toString() === currentUser.toString() && users.role === "admin"));
+    if(!isAdmin){
+        throw new ApiError(403, "You are not authorized to update user role in this note ( need admin role )");
+    }
+
+    // find this user in the note's users
+    const existingUser = currentNote.users.find(users => users.user.toString() === userId.toString());
+    if(!existingUser){
+        throw new ApiError(404, "This user is not assigned to this note");
+    }
+
+    // remove the user from the note's users
+    await Note.updateOne(
+        { _id: noteId },
+        {
+            $pull: {
+                users: { user: userId }
+            }
+        }
+    )
+
+    res.status(200).json(new ApiResponse(200, null, "User removed from note successfully"));
+
+})
+
 export{
     createNote,
     deleteNote,
     updateNote,
     assignUserToNote,
-    updateAssignedUserRole
+    updateAssignedUserRole,
+    removeUserFromNote
 }

@@ -7,7 +7,8 @@ import{
     deleteNote,
     updateNote,
     assignUserToNote,
-    updateAssignedUserRole
+    updateAssignedUserRole,
+    removeUserFromNote
 } from '../controllers/notesController.js';
 
 const router = Router();
@@ -17,5 +18,6 @@ router.delete('/delete/:noteId',verifyJWT, deleteNote);
 router.post('/update/:noteId',verifyJWT, updateNote);
 router.post('/assign-user/:noteId', verifyJWT, assignUserToNote);
 router.post('/update-user-role/:noteId', verifyJWT, updateAssignedUserRole);
+router.delete('/remove-user/:noteId', verifyJWT, removeUserFromNote);
 
 export default router;

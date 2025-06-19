@@ -1,13 +1,17 @@
 import {Router} from 'express';
-import { verifyJWT } from '../middlewares/auth.js';
+import { isAdminLogin, isAdminOrSubadminLogin, verifyJWT } from '../middlewares/auth.js';
 
 
 import{
-    createNote
+    createNote,
+    deleteNote,
+    updateNote
 } from '../controllers/notesController.js';
 
 const router = Router();
 
 router.post('/create', verifyJWT, createNote);
+router.delete('/delete/:noteId',verifyJWT , isAdminLogin, deleteNote);
+router.post('/update/:noteId',verifyJWT,isAdminOrSubadminLogin, updateNote);
 
 export default router;

@@ -2,14 +2,14 @@ import mongoose from "mongoose";
 
 const folderSchema = new mongoose.Schema(
     {
-        ttitle: {
+        title: {
             type: String,
             required: [true, "Title is required"],
         },
-        data: {
+        notes: [{
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Notes",
-        },
+            ref: "Note",
+        }],
         createdBy:{
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",

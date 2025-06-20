@@ -2,22 +2,21 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { Note } from "../models/notesSchema.js";
+import { Folder } from "../models/folderSchema.js";
 
 
 // 1. create a new note
 const createNote = asyncHandler(async (req, res) =>{
 
-    const {title,description , data} = req.body;
+    const {title,description , data , folderId} = req.body;
     console.log("Data coming in createNote controller from req.body:", req.body);
 
-    if(!title || title.trim() === ""){
-        throw new ApiError(400, "Title is required");
+    if(!title || title.trim() === "" || !folderId){
+        throw new ApiError(400, "Title and folderId is required");
     }
 
+
     const owner = req.user._id;
-    if(!owner){
-        throw new ApiError(400, "Owner is required");
-    }
 
     // if current title already exists in collection, throw error
     const existingNote = await Note.findOne({ title: title.trim(), owner: owner});
@@ -32,8 +31,14 @@ const createNote = asyncHandler(async (req, res) =>{
         description: description ? description.trim() : "",
         data: data ? data.trim() : "",
         owner,
-        users: [{user: owner , role: "admin"}] // by default the owner is the admin of the note
+        users: [{user: owner , role: "admin"}], // by default the owner is the admin of the note    
+        inFolder: folderId // assuming the folderId is passed in the request params
     })
+
+    // adding the created note to the folder's notes array
+    const folderInDb = await Folder.findById(folderId);
+    folderInDb.notes.push(note._id);
+    await folderInDb.save();
 
     res.status(201).json(new ApiResponse(201, note, "Note created successfully"));
 

@@ -24,10 +24,12 @@ app.use(cookieParser());
 // import routes
 import userRoute from './routes/userRoute.js';
 import noteRoute from './routes/noteRoute.js';
+import folderRoute from './routes/folderRoute.js';
 
 // Route declerations
 app.use('/api/v1/users', userRoute);  
 app.use('/api/v1/notes',noteRoute);
+app.use('/api/v1/folders', folderRoute);
 
 // Export the app for external use
 export { app };

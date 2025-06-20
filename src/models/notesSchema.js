@@ -21,6 +21,11 @@ const notesSchema = new mongoose.Schema(
             ref: "User",
             required: [true, "Owner is required"],
         },
+        inFolder: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Folder",
+            required: true
+        },
         users:[{
             user: {
                 type:mongoose.Schema.Types.ObjectId,

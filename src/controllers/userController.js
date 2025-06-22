@@ -229,7 +229,7 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
 });
 
 // get logged in user
-const getLoggedInUser = asyncHandler(async (req, res) => {
+export const getLoggedInUser = asyncHandler(async (req, res) => {
     const user = await User.findById(req.user._id)
       .select("-password -refreshToken -confirmPassword");
   
@@ -238,6 +238,25 @@ const getLoggedInUser = asyncHandler(async (req, res) => {
     }
   
     return res.status(200).json(new ApiResponse(200, user, "User fetched successfully"));
+})
+
+// get any user by id
+export const getAnyUser = asyncHandler(async (req, res) => {
+
+  const {userId} = req.params;
+  console.log(" data coming in user controller getAnyUser from req.params:", req.params);
+
+  if (!userId) {
+    throw new ApiError(400, "User ID is required");
+  }
+  const user = await User.findById(userId)
+    .select("-password -refreshToken -confirmPassword");  
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  } 
+
+  return res.status(200).json(new ApiResponse(200, user, "User fetched successfully"));
 })
   
   

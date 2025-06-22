@@ -275,11 +275,53 @@ const removeUserFromNote = asyncHandler(async (req, res) =>{
 
 })
 
+// 7. get a single note by id
+const getNoteById = asyncHandler(async (req, res) => {
+    
+    const { noteId } = req.params;
+    if (!noteId) {
+        throw new ApiError(400, "Note ID is required");
+    }
+
+    // find the note with given id
+    const currentNote = await Note.findById(noteId)
+
+    if (!currentNote) {
+        throw new ApiError(404, "Note does not exist");
+    }
+
+    // check if the user is authorized to view this note
+    const currentUser = req.user._id;
+    const isUserAuthorized = currentNote.users.some(users => users.user.toString() === currentUser.toString());
+    if (!isUserAuthorized) {
+        throw new ApiError(403, "You are not authorized to view this note");
+    }
+
+    res.status(200).json(new ApiResponse(200, currentNote, "Note retrieved successfully"));
+})
+
+//8. get all notes of a user
+const getAllNotesOfUser = asyncHandler(async (req, res) => {
+    
+    const currentUser = req.user._id;
+
+    // find all notes where the user is assigned
+    const notes = await Note.find({ "users.user": currentUser });
+
+    if (!notes || notes.length === 0) {
+        throw new ApiError(404, "No notes found for the user");
+    }
+
+    res.status(200).json(new ApiResponse(200, notes, "Notes retrieved successfully"));
+})
+
 export{
     createNote,
     deleteNote,
     updateNote,
     assignUserToNote,
     updateAssignedUserRole,
-    removeUserFromNote
+    removeUserFromNote,
+    getNoteById,
+    getAllNotesOfUser
 }

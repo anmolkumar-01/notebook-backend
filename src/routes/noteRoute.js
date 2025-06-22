@@ -8,7 +8,9 @@ import{
     updateNote,
     assignUserToNote,
     updateAssignedUserRole,
-    removeUserFromNote
+    removeUserFromNote,
+    getNoteById,
+    getAllNotesOfUser
 } from '../controllers/notesController.js';
 
 const router = Router();
@@ -19,5 +21,7 @@ router.post('/update/:noteId',verifyJWT, updateNote);
 router.post('/assign-user/:noteId', verifyJWT, assignUserToNote);
 router.post('/update-user-role/:noteId', verifyJWT, updateAssignedUserRole);
 router.delete('/remove-user/:noteId', verifyJWT, removeUserFromNote);
+router.get('/all', verifyJWT, getAllNotesOfUser);
+router.get('/:noteId', verifyJWT, getNoteById);
 
 export default router;

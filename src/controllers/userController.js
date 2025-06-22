@@ -99,7 +99,6 @@ export const loginUser = asyncHandler( async(req , res) =>{
     const {email , username , password} = req.body
 
     
-    
     // 2. username or email
     if(!username && !email) {
         throw new ApiError(400 , "Username or email is required in user.controller.js loginuser")
@@ -228,5 +227,17 @@ export const refreshAccessToken = asyncHandler(async (req, res) => {
       throw new ApiError(401, error?.message || "Invalid Refresh Token");
     }
 });
+
+// get logged in user
+const getLoggedInUser = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user._id)
+      .select("-password -refreshToken -confirmPassword");
+  
+    if (!user) {
+      throw new ApiError(404, "User not found");
+    }
+  
+    return res.status(200).json(new ApiResponse(200, user, "User fetched successfully"));
+})
   
   

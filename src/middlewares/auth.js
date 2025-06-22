@@ -52,14 +52,3 @@ export const isAdminLogin = asyncHandler(async (req, res, next) => {
   next();
 });
 
-
-// Middleware to check if user is a subadmin or admin
-export const isAdminOrSubadminLogin = asyncHandler(async (req, res, next) => {
-  // Check if the user exists and is a subadmin or admin
-  if (req.user?.role === "user") {
-    throw new ApiError(401, "Unauthorized Request: Subadmin or Admin Access Required");
-  }
-
-  // Call the next middleware if the user is a subadmin or admin
-  next();
-});
